@@ -14,3 +14,19 @@ end
 describe port(80), :skip do
   it { should_not be_listening }
 end
+
+describe service('elasticsearch') do
+  it { should be_installed }
+  it { should be_enabled }
+  it { should be_running }
+end
+
+describe service('logstash') do
+  it { should be_installed }
+  it { should be_running }
+end
+
+describe service('kibana') do
+  it { should be_installed }
+  it { should be_running }
+end
