@@ -111,6 +111,95 @@ execute 'create systemd daemon for kibana' do
   command 'pleaserun -p systemd -v default /opt/kibana/bin/kibana -p 5601 -H 0.0.0.0 -e http://localhost:9200'
 end
 
+package "nginx"
+package "apache2-utils"
+package "php-fpm"
+
+
+
+service 'nginx' do
+  supports status: true, restart:true, reload:true
+  action [ :enable, :start ]
+end
+
+
+
+file '/etc/nginx/sites-available/proxy.conf' do
+  action :delete
+end
+
+
+
+template '/etc/nginx/sites-available/proxy.conf' do
+  source 'reverse-proxy.conf.erb'
+end
+
+
+
+# template '/etc/nginx/sites-available/proxy.conf' do
+#   source 'reverse-proxy.conf.erb'
+#   variables proxy_port: node['nginx']['proxy_port']
+#   notifies :restart, 'service[nginx]'
+# end
+
+
+
+link '/etc/nginx/sites-enabled/proxy.conf' do
+  to '/etc/nginx/sites-available/proxy.conf'
+  notifies :restart, 'service[nginx]'
+end
+
+
+
+link '/etc/nginx/sites-enabled/default' do
+  notifies :restart, 'service[nginx]'
+  action :delete
+end
+
+
+
+file '/etc/php/7.0/fpm/pool.d/www.conf.erb' do
+  action :delete
+end
+
+
+
+template '/etc/php/7.0/fpm/pool.d/www.conf.erb' do
+  source 'www.conf.erb'
+end
+
+
+
+service 'php7.0-fpm' do
+  action :restart
+end
+
+
+
+execute 'create certificate for NGINX' do
+  command 'sudo openssl req -x509 -batch -nodes -days 365 -newkey rsa:2048  -out /etc/ssl/certs/nginx.crt -keyout /etc/ssl/private/nginx.key -subj /CN=192.168.10.120'
+end
+
+
+
+file '/etc/nginx/sites-available/default' do
+  action :delete
+end
+
+
+
+template '/etc/nginx/sites-available/default' do
+  source 'default.erb'
+end
+
+
+
+service 'nginx' do
+  action :restart
+end
+
+
+
 service 'kibana' do
   action :start
 end
