@@ -1,9 +1,7 @@
 input {
 beats {
 port => 5044
-ssl => true
-ssl_certificate => "/var/lib/logstash/private/logstash-forwarder.crt"
-ssl_key => "/var/lib/logstash/private/logstash-forwarder.key"
+ssl => false
 }
 }
 filter {
