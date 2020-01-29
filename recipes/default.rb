@@ -201,5 +201,9 @@ end
 
 
 service 'kibana' do
-  action :start
+  action :stop
+end
+
+execute 'start kibana dashboard' do
+  command 'sudo /opt/kibana/bin/kibana'
 end
